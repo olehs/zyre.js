@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-expressions */
 /*
  * Copyright (c) 2017 Sebastian Rager
  *
@@ -6,7 +7,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-const { assert } = require('chai');
+const { assert, should, expect } = require('chai');
 const net = require('net');
 const ZHelper = require('../lib/zhelper');
 
@@ -48,13 +49,47 @@ describe('ZHelper', () => {
     const p = 49152;
 
     const server = net.createServer();
+    server.on('close', () => done());
     server.listen(p, ifdata.address, () => {
       ZHelper.getFreePort(ifdata.address, p).then((port) => {
         assert.isAtLeast(port, p + 1);
-        server.close(() => {
-          done();
-        });
+        server.close();
       });
+    });
+  });
+
+  it('should reject on invalid port range', (done) => {
+    const ifdata = ZHelper.getIfData();
+    const s = 49152;
+    const e = 49151;
+    ZHelper.getFreePort(ifdata.address, s, e)
+      .then(() => {
+        should.fail();
+        done();
+      })
+      .catch((error) => {
+        expect(error).to.not.be.null;
+        expect(error).to.not.be.undefined;
+        done();
+      });
+  });
+
+  it('should stop searching for free port on then end of specified port range', (done) => {
+    const ifdata = ZHelper.getIfData();
+    const p = 49152;
+
+    const server = net.createServer();
+    server.on('close', () => done());
+    server.listen(p, ifdata.address, () => {
+      ZHelper.getFreePort(ifdata.address, p, p)
+        .then(() => {
+          should.fail();
+          server.close();
+        }).catch((error) => {
+          expect(error).to.not.be.null;
+          expect(error).to.not.be.undefined;
+          server.close();
+        });
     });
   });
 });
