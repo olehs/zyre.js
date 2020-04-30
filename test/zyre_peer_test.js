@@ -100,7 +100,7 @@ describe('ZyrePeer', () => {
     assert.deepEqual(zyrePeer._groups, {});
   });
 
-  it('should create a new zeromq dealer socket on connect and close it on disconnect', () => {
+  it('should create a new zeromq dealer socket on connect and close it on disconnect', async () => {
     const identity = Buffer.alloc(16);
     uuid.v4(null, identity, 0);
 
@@ -119,15 +119,16 @@ describe('ZyrePeer', () => {
     });
 
     zyrePeer.addToGroup(zyreGroup);
-    zyrePeer.connect();
+
+    await zyrePeer.connect();
     assert.instanceOf(zyrePeer._socket, zeromq.Socket);
-    zyrePeer.disconnect();
+    await zyrePeer.disconnect();
     assert.isNotObject(zyrePeer._socket);
     assert.deepEqual(zyrePeer._groups, {});
     assert.isTrue(hit);
   });
 
-  it('should send a message to the peer', () => {
+  it('should send a message to the peer', async () => {
     const identity = Buffer.alloc(16);
     uuid.v4(null, identity, 0);
 
@@ -139,11 +140,11 @@ describe('ZyrePeer', () => {
     const zreMsg = new Msg();
     zyrePeer._setEndpoint('tcp://127.0.0.1:42321');
 
-    zyrePeer.connect();
-    zyrePeer.send(zreMsg);
+    await zyrePeer.connect();
+    await zyrePeer.send(zreMsg);
     assert.equal(msgHit, 1);
 
-    zyrePeer.disconnect();
+    await zyrePeer.disconnect();
   });
 
   it('should update the peers information', () => {

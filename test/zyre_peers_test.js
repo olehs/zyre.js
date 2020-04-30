@@ -35,7 +35,7 @@ describe('ZyrePeers', () => {
     assert.instanceOf(zyrePeers, ZyrePeers);
   });
 
-  it('should create a new ZyrePeer on push and disconnect it afterwards', () => {
+  it('should create a new ZyrePeer on push and disconnect it afterwards', async () => {
     const identity = Buffer.alloc(16);
     uuid.v4(null, identity, 0);
 
@@ -66,12 +66,12 @@ describe('ZyrePeers', () => {
 
     zyrePeers.push({ identity: '123' });
     zyrePeers.push({ identity: '456' });
-    zyrePeers.disconnectAll();
+    await zyrePeers.disconnectAll();
     assert.isNotTrue(zyrePeers.exists('123'));
     assert.isNotTrue(zyrePeers.exists('456'));
   });
 
-  it('should send a message to all peers', () => {
+  it('should send a message to all peers', async () => {
     const identity = Buffer.alloc(16);
     uuid.v4(null, identity, 0);
 
@@ -81,15 +81,15 @@ describe('ZyrePeers', () => {
     const peer1 = zyrePeers.push({ identity: '123', endpoint: 'tcp://127.0.0.1:54678' });
     const peer2 = zyrePeers.push({ identity: '456', endpoint: 'tcp://127.0.0.1:54679' });
 
-    peer1.connect();
-    peer2.connect();
-    zyrePeers.send(zreMsg);
+    await peer1.connect();
+    await peer2.connect();
+    await zyrePeers.send(zreMsg);
     assert.equal(msgHit, 2);
 
-    zyrePeers.disconnectAll();
+    await zyrePeers.disconnectAll();
   });
 
-  it('should return the public peers object', () => {
+  it('should return the public peers object', async () => {
     const identity = Buffer.alloc(16);
     uuid.v4(null, identity, 0);
 
@@ -101,7 +101,7 @@ describe('ZyrePeers', () => {
     assert.property(zyrePeers.toObj(), '123');
     assert.property(zyrePeers.toObj(), '456');
 
-    zyrePeers.disconnectAll();
+    await zyrePeers.disconnectAll();
   });
 
   it('should add events to the created peers', (done) => {
