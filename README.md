@@ -26,13 +26,19 @@ Zyre.js 2.x is currently available as beta, which uses the rewritten zeromq.js 6
 ## Installation
 
 ```bash
-npm install zyre.js
+npm install olehs/zyre.js
 ```
 
 Beta:
 
 ```bash
-npm install zyre.js@beta
+npm install olehs/zyre.js@beta
+```
+
+React Native:
+
+```bash
+npm install olehs/zyre.js@react-native @olehs/react-native-zeromq react-native-get-random-values react-native-os react-native-tcp-socket react-native-udp
 ```
 
 ## Documentation
@@ -42,23 +48,24 @@ A full jsdoc documentation can be found [here](https://interpretor.github.io/zyr
 ## Usage
 
 ```js
-const Zyre = require('zyre.js');
+const Zyre = require("zyre.js");
 ```
 
 Creates a new zyre.js instance (arguments are optional).
 
 ```js
 const zyre = new Zyre({
-  name: 'foo',      // Name of the zyre node
-  iface: 'eth0',    // Network interface
-  headers: {        // Headers will be sent on every new connection
-    foo: 'bar',
+  name: "foo", // Name of the zyre node
+  iface: "eth0", // Network interface
+  headers: {
+    // Headers will be sent on every new connection
+    foo: "bar",
   },
-  evasive: 5000,    // Timeout after which the local node will try to ping a not responding peer
-  expired: 30000,   // Timeout after which a not responding peer gets disconnected
-  port: 49152,      // Port for incoming messages, will be incremented if already in use
-  bport: 5670,      // Discovery beacon broadcast port
-  binterval: 1000,  // Discovery beacon broadcast interval
+  evasive: 5000, // Timeout after which the local node will try to ping a not responding peer
+  expired: 30000, // Timeout after which a not responding peer gets disconnected
+  port: 49152, // Port for incoming messages, will be incremented if already in use
+  bport: 5670, // Discovery beacon broadcast port
+  binterval: 1000, // Discovery beacon broadcast interval
 });
 ```
 
@@ -66,22 +73,26 @@ Starts up the zyre.js instance. Must be called before any other function.
 
 ```js
 // Async function, so you can register...
-zyre.start(() => {
-  // ...a callback or
-}).then(() => {
-  // ...a Promise
-});
+zyre
+  .start(() => {
+    // ...a callback or
+  })
+  .then(() => {
+    // ...a Promise
+  });
 ```
 
 Stops the zyre.js instance. Deletes all peers data.
 
 ```js
 // Async function, so you can register...
-zyre.stop(() => {
-  // ...a callback or
-}).then(() => {
-  // ...a Promise
-});
+zyre
+  .stop(() => {
+    // ...a callback or
+  })
+  .then(() => {
+    // ...a Promise
+  });
 ```
 
 Sends a private message to the peer with the given identity.
@@ -144,14 +155,14 @@ Sets the encoding of received messages. Defaults to utf8.
 Available are: `ascii`, `utf8`, `utf16le`/`ucs2`, `base64`, `binary`, `hex`, `raw`/`null`
 
 ```js
-zyre.setEncoding('utf8');   // Default encoding
-zyre.setEncoding(null);     // Raw buffers
+zyre.setEncoding("utf8"); // Default encoding
+zyre.setEncoding(null); // Raw buffers
 ```
 
 Connect is fired when a new peer joins the network.
 
 ```js
-zyre.on('connect', (id, name, headers) => {
+zyre.on("connect", (id, name, headers) => {
   // ...
 });
 ```
@@ -159,7 +170,7 @@ zyre.on('connect', (id, name, headers) => {
 Disconnect is fired when a peer disconnects from the network.
 
 ```js
-zyre.on('disconnect', (id, name) => {
+zyre.on("disconnect", (id, name) => {
   // ...
 });
 ```
@@ -167,7 +178,7 @@ zyre.on('disconnect', (id, name) => {
 Expired is fired when a peer timed out. (uses expired timeout value)
 
 ```js
-zyre.on('expired', (id, name) => {
+zyre.on("expired", (id, name) => {
   // ...
 });
 ```
@@ -175,7 +186,7 @@ zyre.on('expired', (id, name) => {
 Whisper is fired when a peer sends a private message.
 
 ```js
-zyre.on('whisper', (id, name, message) => {
+zyre.on("whisper", (id, name, message) => {
   // ...
 });
 ```
@@ -183,7 +194,7 @@ zyre.on('whisper', (id, name, message) => {
 Shout is fired when a peer sends a group message.
 
 ```js
-zyre.on('shout', (id, name, message, group) => {
+zyre.on("shout", (id, name, message, group) => {
   // ...
 });
 ```
@@ -191,7 +202,7 @@ zyre.on('shout', (id, name, message, group) => {
 Join is fired when a peer joins a group.
 
 ```js
-zyre.on('join', (id, name, group) => {
+zyre.on("join", (id, name, group) => {
   // ...
 });
 ```
@@ -199,7 +210,7 @@ zyre.on('join', (id, name, group) => {
 Leave is fired when a peer leaves a group.
 
 ```js
-zyre.on('leave', (id, name, group) => {
+zyre.on("leave", (id, name, group) => {
   // ...
 });
 ```
@@ -211,30 +222,30 @@ There is a sample chat package that can be found [here](https://github.com/inter
 Inline example of two nodes talking to each other:
 
 ```js
-const Zyre = require('zyre.js');
+const Zyre = require("zyre.js");
 
-const chris = new Zyre({ name: 'Chris' });
-const john = new Zyre({ name: 'John' });
+const chris = new Zyre({ name: "Chris" });
+const john = new Zyre({ name: "John" });
 
-chris.on('connect', () => {
-  chris.shout('CHAT', 'Hello World');
+chris.on("connect", () => {
+  chris.shout("CHAT", "Hello World");
 });
 
-chris.on('whisper', (id, name, message) => {
+chris.on("whisper", (id, name, message) => {
   console.log(`${name}: ${message}`);
 });
 
 chris.start(() => {
-  chris.join('CHAT');
+  chris.join("CHAT");
 });
 
-john.on('shout', (id, name, message, group) => {
+john.on("shout", (id, name, message, group) => {
   console.log(`(${group}) ${name}: ${message}`);
   john.whisper(id, `Hello ${name}`);
 });
 
 john.start(() => {
-  john.join('CHAT');
+  john.join("CHAT");
 });
 ```
 

@@ -30,6 +30,7 @@
   },
   "homepage": "https://github.com/interpretor/zyre.js#readme",
   "dependencies": {
+    "buffer": "^5.6.0",
     "debug": "^4.1.1",
     "uuid": "^7.0.2",
     "zeromq": "^6.0.0-beta.6"
@@ -42,6 +43,13 @@
     "jsdoc": "^3.6.3",
     "mocha": "^7.1.0",
     "nyc": "^15.0.0"
+  },
+  "peerDependencies": {
+    "@olehs/react-native-zeromq": ">= 0.8",
+    "react-native-get-random-values": "=> 1.4",
+    "react-native-os": ">= 1.2",
+    "react-native-tcp-socket": ">= 3.5",
+    "react-native-udp": ">= 3.1"
   },
   "greenkeeper": {
     "ignore": [
