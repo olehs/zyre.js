@@ -13,6 +13,10 @@ const EventEmitter = require('events');
 const ZHelper = require('../lib/zhelper');
 const ZBeacon = require('../lib/zbeacon');
 
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 describe('ZBeacon', () => {
   // ZyrePeers mock
   class Peers extends EventEmitter {
@@ -35,7 +39,7 @@ describe('ZBeacon', () => {
     assert.instanceOf(zBeacon, ZBeacon);
   });
 
-  it('should start broadcasting the zre beacon, listen to foreign beacons and push discovered peers', (done) => {
+  it('should start broadcasting the zre beacon, listen to foreign beacons and push discovered peers', async () => {
     const ifaceData = ZHelper.getIfData();
     const { address } = ifaceData; // The local address, which is the sender of the udp package
 
@@ -75,19 +79,16 @@ describe('ZBeacon', () => {
       hit = true;
     });
 
-    const stopAll = () => {
-      zBeacon.stop().then(() => {
-        zBeacon2.stop().then(() => {
-          if (hit) setTimeout(() => { done(); }, 100);
-        });
-      });
-    };
+    await zBeacon.start();
+    await zBeacon2.start();
+    await delay(100);
 
-    zBeacon.start().then(() => {
-      zBeacon2.start().then(() => {
-        setTimeout(stopAll, 100);
-      });
-    });
+    await Promise.all([
+      zBeacon.stop(),
+      zBeacon2.stop(),
+    ]);
+
+    assert(hit);
   });
 
   it('should discard corrupted udp packages', (done) => {
@@ -149,7 +150,7 @@ describe('ZBeacon', () => {
     });
   });
 
-  it('should not throw any error if any socket is not initialized on stop', (done) => {
+  it('should not throw any error if any socket is not initialized on stop', async () => {
     const identity = Buffer.alloc(16);
     uuidv4(null, identity, 0);
 
@@ -160,8 +161,6 @@ describe('ZBeacon', () => {
       zyrePeers: new Peers(),
     });
 
-    zBeacon.stop().then(() => {
-      done();
-    });
+    await zBeacon.stop();
   });
 });

@@ -9,6 +9,10 @@
 const { assert } = require('chai');
 const Zyre = require('../lib/zyre');
 
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 describe('Zyre', () => {
   it('should create a new instance of Zyre', () => {
     const zyre = new Zyre({ name: 'foo' });
@@ -33,7 +37,7 @@ describe('Zyre', () => {
     assert.isTrue(hit);
   });
 
-  it('should inform about connected peers', (done) => {
+  it('should inform about connected peers', async () => {
     const zyre1 = new Zyre({ name: 'zyre1' });
     const zyre2 = new Zyre({ name: 'zyre2', headers: { foo: 'bar' } });
 
@@ -46,22 +50,18 @@ describe('Zyre', () => {
       hit = true;
     });
 
-    const stopAll = () => {
-      zyre2.stop().then(() => {
-        zyre1.stop().then(() => {
-          if (hit) setTimeout(() => done(), 100);
-        });
-      });
-    };
+    await zyre1.start();
+    await zyre2.start();
+    await delay(100);
 
-    zyre1.start().then(() => {
-      zyre2.start().then(() => {
-        setTimeout(stopAll, 100);
-      });
-    });
+    await zyre2.stop();
+    await zyre1.stop();
+    await delay(100);
+
+    assert(hit);
   });
 
-  it('should inform about disconnected peers', (done) => {
+  it('should inform about disconnected peers', async () => {
     const zyre1 = new Zyre({ name: 'zyre1' });
     const zyre2 = new Zyre({ name: 'zyre2' });
 
@@ -73,25 +73,19 @@ describe('Zyre', () => {
       hit = true;
     });
 
-    const stopZyre2 = () => {
-      zyre2.stop();
-    };
+    await zyre1.start();
+    await zyre2.start();
+    await delay(100);
 
-    const stopAll = () => {
-      zyre1.stop().then(() => {
-        if (hit) setTimeout(() => done(), 100);
-      });
-    };
+    await zyre2.stop();
+    await delay(100);
 
-    zyre1.start().then(() => {
-      zyre2.start().then(() => {
-        setTimeout(stopZyre2, 100);
-        setTimeout(stopAll, 200);
-      });
-    });
+    await zyre1.stop();
+
+    assert(hit);
   });
 
-  it('should communicate with WHISPER messages', (done) => {
+  it('should communicate with WHISPER messages', async () => {
     const zyre1 = new Zyre({ name: 'zyre1' });
     const zyre2 = new Zyre({ name: 'zyre2' });
 
@@ -111,27 +105,24 @@ describe('Zyre', () => {
       zyre2.whisper(zyre1.getIdentity(), 'Hey!');
     });
 
-    const whisper = () => {
-      zyre1.whisper(zyre2.getIdentity(), 'Hello World!');
-    };
+    const whisper = async () => zyre1.whisper(zyre2.getIdentity(), 'Hello World!');
 
-    const stopAll = () => {
-      zyre2.stop().then(() => {
-        zyre1.stop().then(() => {
-          if (hit) setTimeout(() => done(), 100);
-        });
-      });
-    };
+    await zyre1.start();
+    await zyre2.start();
+    await delay(100);
 
-    zyre1.start().then(() => {
-      zyre2.start().then(() => {
-        setTimeout(whisper, 100);
-        setTimeout(stopAll, 200);
-      });
-    });
+    await whisper();
+    await delay(100);
+
+    await Promise.all([
+      zyre2.stop(),
+      zyre1.stop(),
+    ]);
+
+    assert(hit);
   });
 
-  it('should communicate with SHOUT messages', (done) => {
+  it('should communicate with SHOUT messages', async () => {
     const zyre1 = new Zyre({ name: 'zyre1' });
     const zyre2 = new Zyre({ name: 'zyre2' });
     const zyre3 = new Zyre({ name: 'zyre3' });
@@ -155,34 +146,27 @@ describe('Zyre', () => {
       hit2 = true;
     });
 
-    const shout = () => {
-      zyre1.shout('CHAT', 'Hello World!');
-    };
+    await zyre1.start();
+    await zyre1.join('CHAT');
+    await zyre2.start();
+    await zyre2.join('CHAT');
+    await zyre3.start();
+    await zyre3.join('CHAT');
+    await delay(100);
 
-    const stopAll = () => {
-      zyre3.stop().then(() => {
-        zyre2.stop().then(() => {
-          zyre1.stop().then(() => {
-            if (hit1 && hit2) setTimeout(() => done(), 100);
-          });
-        });
-      });
-    };
+    await zyre1.shout('CHAT', 'Hello World!');
+    await delay(100);
 
-    zyre1.start().then(() => {
-      zyre1.join('CHAT');
-      zyre2.start().then(() => {
-        zyre2.join('CHAT');
-        zyre3.start().then(() => {
-          zyre3.join('CHAT');
-          setTimeout(shout, 100);
-          setTimeout(stopAll, 200);
-        });
-      });
-    });
+    await Promise.all([
+      zyre1.stop(),
+      zyre2.stop(),
+      zyre3.stop(),
+    ]);
+
+    assert(hit1 && hit2);
   });
 
-  it('should join a group and send JOIN messages', (done) => {
+  it('should join a group and send JOIN messages', async () => {
     const zyre1 = new Zyre({ name: 'zyre1' });
     const zyre2 = new Zyre({ name: 'zyre2' });
 
@@ -196,27 +180,22 @@ describe('Zyre', () => {
       hit = true;
     });
 
-    const join = () => {
-      zyre1.join('CHAT');
-    };
+    await zyre1.start();
+    await zyre2.start();
+    await delay(100);
 
-    const stopAll = () => {
-      zyre1.stop().then(() => {
-        zyre2.stop().then(() => {
-          if (hit) setTimeout(() => done(), 100);
-        });
-      });
-    };
+    await zyre1.join('CHAT');
+    await delay(100);
 
-    zyre1.start().then(() => {
-      zyre2.start().then(() => {
-        setTimeout(join, 100);
-        setTimeout(stopAll, 200);
-      });
-    });
+    await Promise.all([
+      zyre1.stop(),
+      zyre2.stop(),
+    ]);
+
+    assert(hit);
   });
 
-  it('should leave a group and send LEAVE messages', (done) => {
+  it('should leave a group and send LEAVE messages', async () => {
     const zyre1 = new Zyre({ name: 'zyre1' });
     const zyre2 = new Zyre({ name: 'zyre2' });
 
@@ -230,32 +209,25 @@ describe('Zyre', () => {
       hit = true;
     });
 
-    const join = () => {
-      zyre1.join('CHAT');
-    };
+    await zyre1.start();
+    await zyre2.start();
+    await delay(100);
 
-    const leave = () => {
-      zyre1.leave('CHAT');
-    };
+    await zyre1.join('CHAT');
+    await delay(100);
 
-    const stopAll = () => {
-      zyre1.stop().then(() => {
-        zyre2.stop().then(() => {
-          if (hit) setTimeout(() => done(), 100);
-        });
-      });
-    };
+    await zyre1.leave('CHAT');
+    await delay(100);
 
-    zyre1.start().then(() => {
-      zyre2.start().then(() => {
-        setTimeout(join, 100);
-        setTimeout(leave, 200);
-        setTimeout(stopAll, 300);
-      });
-    });
+    await Promise.all([
+      zyre1.stop(),
+      zyre2.stop(),
+    ]);
+
+    assert(hit);
   });
 
-  it('should return ZyrePeer(s) informations', (done) => {
+  it('should return ZyrePeer(s) informations', async () => {
     const zyre1 = new Zyre({ name: 'zyre1' });
     const zyre2 = new Zyre({ name: 'zyre2' });
 
@@ -270,23 +242,21 @@ describe('Zyre', () => {
       hit = true;
     };
 
-    const stopAll = () => {
-      zyre2.stop().then(() => {
-        zyre1.stop().then(() => {
-          if (hit) setTimeout(() => done(), 100);
-        });
-      });
-    };
+    await zyre1.start();
+    await zyre2.start();
+    await delay(100);
 
-    zyre1.start().then(() => {
-      zyre2.start().then(() => {
-        setTimeout(getPeers, 100);
-        setTimeout(stopAll, 200);
-      });
-    });
+    getPeers();
+
+    await Promise.all([
+      zyre1.stop(),
+      zyre2.stop(),
+    ]);
+
+    assert(hit);
   });
 
-  it('should return ZyreGroup(s) informations', (done) => {
+  it('should return ZyreGroup(s) informations', async () => {
     const zyre1 = new Zyre({ name: 'zyre1' });
     const zyre2 = new Zyre({ name: 'zyre2' });
 
@@ -300,25 +270,23 @@ describe('Zyre', () => {
       hit = true;
     };
 
-    const stopAll = () => {
-      zyre2.stop().then(() => {
-        zyre1.stop().then(() => {
-          if (hit) setTimeout(() => done(), 100);
-        });
-      });
-    };
+    await zyre1.start();
+    await zyre1.join('TEST');
+    await zyre2.start();
+    await zyre2.join('TEST');
+    await delay(100);
 
-    zyre1.start().then(() => {
-      zyre1.join('TEST');
-      zyre2.start().then(() => {
-        zyre2.join('TEST');
-        setTimeout(getGroups, 100);
-        setTimeout(stopAll, 200);
-      });
-    });
+    getGroups();
+
+    await Promise.all([
+      zyre1.stop(),
+      zyre2.stop(),
+    ]);
+
+    assert(hit);
   });
 
-  it('should inform about expired peers', (done) => {
+  it('should inform about expired peers', async () => {
     const evasive = 200;
     const expired = 400;
 
@@ -342,23 +310,22 @@ describe('Zyre', () => {
       clearTimeout(zyre2._zyrePeers._peers[zyre1.getIdentity()]._evasiveTimeout);
     };
 
-    const stopAll = () => {
-      zyre2.stop().then(() => {
-        zyre1.stop().then(() => {
-          if (hit) setTimeout(() => done(), 100);
-        });
-      });
-    };
+    await zyre1.start();
+    await zyre2.start();
+    await delay(100);
 
-    zyre1.start().then(() => {
-      zyre2.start().then(() => {
-        setTimeout(stopTimeouts, 100);
-        setTimeout(stopAll, expired + 100);
-      });
-    });
+    stopTimeouts();
+    await delay(expired);
+
+    await Promise.all([
+      zyre1.stop(),
+      zyre2.stop(),
+    ]);
+
+    assert(hit);
   });
 
-  it('should support different encodings for messages', (done) => {
+  it('should support different encodings for messages', async () => {
     const zyre1 = new Zyre();
     const zyre2 = new Zyre();
 
@@ -376,42 +343,41 @@ describe('Zyre', () => {
       if (hit === 10) assert.strictEqual(msg, 'asdäöü€');
     });
 
-    const stopAll = () => {
-      zyre2.stop().then(() => {
-        zyre1.stop().then(() => {
-          if (hit === 10) setTimeout(() => done(), 100);
-        });
-      });
-    };
-
-    function sendMessage(encoding) {
+    const sendMessage = async (encoding) => {
       zyre1.setEncoding(encoding);
 
       if (encoding === null || encoding === 'raw') {
-        zyre2.shout('CHAT', Buffer.from('asdäöü€'));
+        await zyre2.shout('CHAT', Buffer.from('asdäöü€'));
       } else if (encoding === 'garbish') {
-        zyre2.shout('CHAT', 'asdäöü€');
+        await zyre2.shout('CHAT', 'asdäöü€');
       } else {
-        zyre2.shout('CHAT', Buffer.from('asdäöü€').toString(encoding));
+        await zyre2.shout('CHAT', Buffer.from('asdäöü€').toString(encoding));
       }
-    }
+      await delay(50);
+    };
 
-    zyre1.start().then(() => {
-      zyre1.join('CHAT');
-      zyre2.start().then(() => {
-        zyre2.join('CHAT');
-        setTimeout(() => sendMessage(null), 50);
-        setTimeout(() => sendMessage('raw'), 100);
-        setTimeout(() => sendMessage('ascii'), 150);
-        setTimeout(() => sendMessage('utf8'), 200);
-        setTimeout(() => sendMessage('utf16le'), 250);
-        setTimeout(() => sendMessage('ucs2'), 300);
-        setTimeout(() => sendMessage('base64'), 350);
-        setTimeout(() => sendMessage('binary'), 400);
-        setTimeout(() => sendMessage('hex'), 450);
-        setTimeout(() => sendMessage('garbish'), 500);
-        setTimeout(stopAll, 550);
-      });
-    });
+    await zyre1.start();
+    await zyre1.join('CHAT');
+    await zyre2.start();
+    await zyre2.join('CHAT');
+    await delay(50);
+
+    await sendMessage(null);
+    await sendMessage('raw');
+    await sendMessage('ascii');
+    await sendMessage('utf8');
+    await sendMessage('utf16le');
+    await sendMessage('ucs2');
+    await sendMessage('base64');
+    await sendMessage('binary');
+    await sendMessage('hex');
+    await sendMessage('garbish');
+
+    await Promise.all([
+      zyre1.stop(),
+      zyre2.stop(),
+    ]);
+
+    assert(hit === 10);
   });
 });

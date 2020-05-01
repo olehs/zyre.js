@@ -10,6 +10,10 @@ const { assert } = require('chai');
 const zeromq = require('zeromq');
 const ZreMsg = require('../lib/zre_msg');
 
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 describe('ZreMsg', () => {
   it('should create an instance of ZreMsg', () => {
     const zreMsg = new ZreMsg(ZreMsg.PING);
@@ -286,7 +290,7 @@ describe('ZreMsg', () => {
     assert.deepEqual(recvMsg.headers, headers);
   });
 
-  it('should send a HELLO message with the given zeromq dealer socket', (done) => {
+  it('should send a HELLO message with the given zeromq dealer socket', async () => {
     const sequence = 1;
     const endpoint = 'tcp://127.0.0.1:42101';
     const groups = ['FOO', 'BAR'];
@@ -328,22 +332,19 @@ describe('ZreMsg', () => {
       hit = true;
     });
 
-    router.bind(address).then(() => {
-      dealer.connect(address);
+    await router.bind(address);
+    dealer.connect(address);
 
-      const stopAll = () => {
-        router.close();
-        dealer.close();
-        if (hit) setTimeout(() => { done(); }, 100);
-      };
+    await zreMsg.send(dealer);
+    await delay(100);
 
-      zreMsg.send(dealer);
+    router.close();
+    dealer.close();
 
-      setTimeout(stopAll, 100);
-    });
+    assert(hit);
   });
 
-  it('should send a WHISPER message with the given zeromq dealer socket', (done) => {
+  it('should send a WHISPER message with the given zeromq dealer socket', async () => {
     const sequence = 42;
     const content = 'Hello World!';
 
@@ -370,19 +371,16 @@ describe('ZreMsg', () => {
       hit = true;
     });
 
-    router.bind(address).then(() => {
-      dealer.connect(address);
+    await router.bind(address);
+    dealer.connect(address);
 
-      const stopAll = () => {
-        router.close();
-        dealer.close();
-        if (hit) setTimeout(() => { done(); }, 100);
-      };
+    await zreMsg.send(dealer);
+    await delay(100);
 
-      zreMsg.send(dealer);
+    router.close();
+    dealer.close();
 
-      setTimeout(stopAll, 100);
-    });
+    assert(hit);
   });
 
   it('should set the sequence and group', () => {

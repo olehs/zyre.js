@@ -78,7 +78,7 @@ describe('ZyreGroup', () => {
     assert.property(zyreGroup.toObj(), 'foobar');
   });
 
-  it('should send a message to all group members', (done) => {
+  it('should send a message to all group members', async () => {
     const zyrePeer1 = new Peer('foobar1');
     const zyrePeer2 = new Peer('foobar2');
     const zreMsg = new Msg();
@@ -100,8 +100,8 @@ describe('ZyreGroup', () => {
       hit2 = true;
     });
 
-    zyreGroup.send(zreMsg);
+    await zyreGroup.send(zreMsg);
 
-    if (hit1 && hit2) done();
+    assert(hit1 && hit2);
   });
 });
