@@ -64,6 +64,7 @@ const zyre = new Zyre({
   evasive: 5000, // Timeout after which the local node will try to ping a not responding peer
   expired: 30000, // Timeout after which a not responding peer gets disconnected
   port: 49152, // Port for incoming messages, will be incremented if already in use
+  eport: 65535, // Last port when trying to find available port
   bport: 5670, // Discovery beacon broadcast port
   binterval: 1000, // Discovery beacon broadcast interval
 });
