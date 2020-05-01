@@ -25,12 +25,6 @@ Zyre.js 2.x is currently available as beta, which uses the rewritten zeromq.js 6
 
 ## Installation
 
-Node.js
-
-```bash
-npm install olehs/zyre.js
-```
-
 Node.js (Beta):
 
 ```bash
