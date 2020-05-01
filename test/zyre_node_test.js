@@ -9,7 +9,7 @@
 /* eslint-disable max-classes-per-file */
 
 const { assert } = require('chai');
-const uuid = require('uuid');
+const { v4: uuidv4 } = require('uuid');
 const ZyreNode = require('../lib/zyre_node');
 const ZreMsg = require('../lib/zre_msg');
 const ZHelper = require('../lib/zhelper');
@@ -64,7 +64,7 @@ describe('ZyreNode', () => {
 
   it('should create an instance of ZyreNode', () => {
     const identity = Buffer.alloc(16);
-    uuid.v4(null, identity, 0);
+    uuidv4(null, identity, 0);
 
     const zyreNode = new ZyreNode({
       identity,
@@ -80,7 +80,7 @@ describe('ZyreNode', () => {
 
   it('should send a PING_OK message when received a PING', (done) => {
     const identity = Buffer.alloc(16);
-    uuid.v4(null, identity, 0);
+    uuidv4(null, identity, 0);
 
     const zyreNode = new ZyreNode({
       identity,
@@ -93,7 +93,7 @@ describe('ZyreNode', () => {
 
     const recvID = Buffer.alloc(17);
     recvID[0] = 1;
-    uuid.v4(null, recvID, 1);
+    uuidv4(null, recvID, 1);
 
     zyreNode._messageHandler(recvID, new ZreMsg(ZreMsg.PING).toBuffer());
 
@@ -105,7 +105,7 @@ describe('ZyreNode', () => {
 
   it('should reject a malformed message', (done) => {
     const identity = Buffer.alloc(16);
-    uuid.v4(null, identity, 0);
+    uuidv4(null, identity, 0);
 
     const zyrePeers = new Peers();
 
@@ -120,7 +120,7 @@ describe('ZyreNode', () => {
 
     const recvID = Buffer.alloc(17);
     recvID[0] = 1;
-    uuid.v4(null, recvID, 1);
+    uuidv4(null, recvID, 1);
 
     zyreNode._messageHandler(recvID, 'qwertzuiop1234567890');
 
@@ -132,7 +132,7 @@ describe('ZyreNode', () => {
 
   it('should reject messages from unknown peers that are not HELLO messages', (done) => {
     const identity = Buffer.alloc(16);
-    uuid.v4(null, identity, 0);
+    uuidv4(null, identity, 0);
 
     const zyrePeers = new Peers();
     zyrePeers.exist = false;
@@ -148,7 +148,7 @@ describe('ZyreNode', () => {
 
     const recvID = Buffer.alloc(17);
     recvID[0] = 1;
-    uuid.v4(null, recvID, 1);
+    uuidv4(null, recvID, 1);
 
     zyreNode._messageHandler(recvID, new ZreMsg(ZreMsg.PING).toBuffer());
 

@@ -7,7 +7,7 @@
  */
 
 const { assert } = require('chai');
-const uuid = require('uuid');
+const { v4: uuidv4 } = require('uuid');
 const zeromq = require('zeromq');
 const ZyrePeers = require('../lib/zyre_peers');
 
@@ -28,7 +28,7 @@ describe('ZyrePeers', () => {
 
   it('should create an instance of ZyrePeers', () => {
     const identity = Buffer.alloc(16);
-    uuid.v4(null, identity, 0);
+    uuidv4(null, identity, 0);
 
     const zyrePeers = new ZyrePeers({ identity });
 
@@ -37,7 +37,7 @@ describe('ZyrePeers', () => {
 
   it('should create a new ZyrePeer on push and disconnect it afterwards', async () => {
     const identity = Buffer.alloc(16);
-    uuid.v4(null, identity, 0);
+    uuidv4(null, identity, 0);
 
     const zyrePeers = new ZyrePeers({ identity });
 
@@ -73,7 +73,7 @@ describe('ZyrePeers', () => {
 
   it('should send a message to all peers', async () => {
     const identity = Buffer.alloc(16);
-    uuid.v4(null, identity, 0);
+    uuidv4(null, identity, 0);
 
     const zyrePeers = new ZyrePeers({ identity });
     const zreMsg = new Msg();
@@ -91,7 +91,7 @@ describe('ZyrePeers', () => {
 
   it('should return the public peers object', async () => {
     const identity = Buffer.alloc(16);
-    uuid.v4(null, identity, 0);
+    uuidv4(null, identity, 0);
 
     const zyrePeers = new ZyrePeers({ identity });
 
@@ -109,7 +109,7 @@ describe('ZyrePeers', () => {
     const expired = 200;
 
     const identity = Buffer.alloc(16);
-    uuid.v4(null, identity, 0);
+    uuidv4(null, identity, 0);
 
     const zyrePeers = new ZyrePeers({ identity, evasive, expired });
 

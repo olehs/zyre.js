@@ -7,7 +7,7 @@
  */
 
 const { assert } = require('chai');
-const uuid = require('uuid');
+const { v4: uuidv4 } = require('uuid');
 const dgram = require('dgram');
 const EventEmitter = require('events');
 const ZHelper = require('../lib/zhelper');
@@ -23,7 +23,7 @@ describe('ZBeacon', () => {
 
   it('should create an instance of ZBeacon', () => {
     const identity = Buffer.alloc(16);
-    uuid.v4(null, identity, 0);
+    uuidv4(null, identity, 0);
 
     const zBeacon = new ZBeacon({
       identity,
@@ -41,7 +41,7 @@ describe('ZBeacon', () => {
 
     // Init Peer 1
     const identity = Buffer.alloc(16);
-    uuid.v4(null, identity, 0);
+    uuidv4(null, identity, 0);
     const mailbox = 51409;
     const zyrePeers = new Peers();
 
@@ -54,7 +54,7 @@ describe('ZBeacon', () => {
 
     // Init Peer 2
     const identity2 = Buffer.alloc(16);
-    uuid.v4(null, identity2, 0);
+    uuidv4(null, identity2, 0);
     const mailbox2 = 51410;
     const zyrePeers2 = new Peers();
 
@@ -97,7 +97,7 @@ describe('ZBeacon', () => {
 
     // Init Peer
     const identity = Buffer.alloc(16);
-    uuid.v4(null, identity, 0);
+    uuidv4(null, identity, 0);
     const mailbox = 51409;
     const zyrePeers = new Peers();
 
@@ -151,7 +151,7 @@ describe('ZBeacon', () => {
 
   it('should not throw any error if any socket is not initialized on stop', (done) => {
     const identity = Buffer.alloc(16);
-    uuid.v4(null, identity, 0);
+    uuidv4(null, identity, 0);
 
     const zBeacon = new ZBeacon({
       identity,

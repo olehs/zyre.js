@@ -9,7 +9,7 @@
 /* eslint-disable max-classes-per-file */
 
 const { assert } = require('chai');
-const uuid = require('uuid');
+const { v4: uuidv4 } = require('uuid');
 const zeromq = require('zeromq');
 const ZyrePeer = require('../lib/zyre_peer');
 
@@ -52,7 +52,7 @@ describe('ZyrePeer', () => {
 
   it('should create an instance of ZyrePeer', () => {
     const identity = Buffer.alloc(16);
-    uuid.v4(null, identity, 0);
+    uuidv4(null, identity, 0);
 
     const zyrePeer = new ZyrePeer({
       identity: '12345',
@@ -82,7 +82,7 @@ describe('ZyrePeer', () => {
 
   it('should add/remove the ZyrePeer to/from a group', () => {
     const identity = Buffer.alloc(16);
-    uuid.v4(null, identity, 0);
+    uuidv4(null, identity, 0);
 
     const zyrePeer = new ZyrePeer({
       identity: '12345',
@@ -102,7 +102,7 @@ describe('ZyrePeer', () => {
 
   it('should create a new zeromq dealer socket on connect and close it on disconnect', async () => {
     const identity = Buffer.alloc(16);
-    uuid.v4(null, identity, 0);
+    uuidv4(null, identity, 0);
 
     const zyrePeer = new ZyrePeer({
       identity: '12345',
@@ -130,7 +130,7 @@ describe('ZyrePeer', () => {
 
   it('should send a message to the peer', async () => {
     const identity = Buffer.alloc(16);
-    uuid.v4(null, identity, 0);
+    uuidv4(null, identity, 0);
 
     const zyrePeer = new ZyrePeer({
       identity: '12345',
@@ -149,7 +149,7 @@ describe('ZyrePeer', () => {
 
   it('should update the peers information', () => {
     const identity = Buffer.alloc(16);
-    uuid.v4(null, identity, 0);
+    uuidv4(null, identity, 0);
 
     const zyrePeer = new ZyrePeer({
       identity: '12345',
@@ -196,7 +196,7 @@ describe('ZyrePeer', () => {
     const expired = 200;
 
     const identity = Buffer.alloc(16);
-    uuid.v4(null, identity, 0);
+    uuidv4(null, identity, 0);
 
     const zyrePeer = new ZyrePeer({
       identity: '12345',
@@ -220,7 +220,7 @@ describe('ZyrePeer', () => {
     const expired = 200;
 
     const identity = Buffer.alloc(16);
-    uuid.v4(null, identity, 0);
+    uuidv4(null, identity, 0);
 
     const zyrePeer = new ZyrePeer({
       identity: '12345',
@@ -240,7 +240,7 @@ describe('ZyrePeer', () => {
 
   it('should return the public peer object', () => {
     const identity = Buffer.alloc(16);
-    uuid.v4(null, identity, 0);
+    uuidv4(null, identity, 0);
 
     const zyrePeer = new ZyrePeer({
       identity: '12345',
