@@ -46,7 +46,7 @@
   },
   "peerDependencies": {
     "@olehs/react-native-zeromq": ">= 0.8",
-    "react-native-get-random-values": "=> 1.4",
+    "react-native-get-random-values": ">= 1.4",
     "react-native-os": ">= 1.2",
     "react-native-tcp-socket": ">= 3.5",
     "react-native-udp": ">= 3.1"
