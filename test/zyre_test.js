@@ -287,6 +287,7 @@ describe('Zyre', () => {
     await zyre1.join('CHAT');
     await delay(100);
 
+    await zyre1.leave('OTHER');
     await zyre1.leave('CHAT');
     await delay(100);
 
