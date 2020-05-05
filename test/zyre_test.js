@@ -9,9 +9,7 @@
 const { assert } = require('chai');
 const Zyre = require('../lib/zyre');
 
-function delay(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 describe('Zyre', () => {
   it('should create a new instance of Zyre', () => {
