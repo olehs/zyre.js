@@ -9,6 +9,7 @@
 /* eslint-disable max-classes-per-file */
 
 const { assert } = require('chai');
+const EventEmitter = require('events');
 const { v4: uuidv4 } = require('uuid');
 const ZyreNode = require('../lib/zyre_node');
 const ZreMsg = require('../lib/zre_msg');
@@ -32,8 +33,9 @@ describe('ZyreNode', () => {
   }
 
   // ZyrePeers mock
-  class Peers {
+  class Peers extends EventEmitter {
     constructor() {
+      super();
       this.exist = true;
       this.data = false;
     }

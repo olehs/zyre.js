@@ -12,6 +12,9 @@ const { assert } = require('chai');
 const { v4: uuidv4 } = require('uuid');
 const zeromq = require('zeromq');
 const ZyrePeer = require('../lib/zyre_peer');
+const ZeroChannel = require('../lib/zyre_channel');
+
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 describe('ZyrePeer', () => {
   // ZyreGroup mock
@@ -40,10 +43,10 @@ describe('ZyrePeer', () => {
 
   // ZreMsg mock
   class Msg {
-    send(socket) {
+    send(channel) {
       msgHit += 1;
-      this.socket = socket;
-      assert.instanceOf(this.socket, zeromq.Socket);
+      this.channel = channel;
+      assert.instanceOf(this.channel, ZeroChannel);
       return new Promise((resolve) => {
         resolve(1);
       });
@@ -121,9 +124,9 @@ describe('ZyrePeer', () => {
     zyrePeer.addToGroup(zyreGroup);
 
     await zyrePeer.connect();
-    assert.instanceOf(zyrePeer._socket, zeromq.Socket);
+    assert.instanceOf(zyrePeer._channel._socket, zeromq.Socket);
     await zyrePeer.disconnect();
-    assert.isNotObject(zyrePeer._socket);
+    assert.isNotObject(zyrePeer._channel._socket);
     assert.deepEqual(zyrePeer._groups, {});
     assert.isTrue(hit);
   });
@@ -147,7 +150,7 @@ describe('ZyrePeer', () => {
     await zyrePeer.disconnect();
   });
 
-  it('should update the peers information', () => {
+  it('should update the peers information', async () => {
     const identity = Buffer.alloc(16);
     uuidv4(null, identity, 0);
 
@@ -165,6 +168,7 @@ describe('ZyrePeer', () => {
     zyrePeer.update({ sequence: 1 });
     assert.equal(zyrePeer._sequenceIn, 1);
     assert.isNotObject(zyrePeer.update({ sequence: 3 }));
+    await delay(50);
     assert.isTrue(hit);
     hit = false;
 
@@ -177,6 +181,7 @@ describe('ZyrePeer', () => {
     zyrePeer.update({ endpoint: 'tcp://127.0.0.42:57142' });
     assert.equal(zyrePeer._endpoint, 'tcp://127.0.0.42:57142');
     assert.isNotObject(zyrePeer.update({ address: '0.0.0.0', mailbox: 0 }));
+    await delay(50);
     assert.isTrue(hit);
 
     zyrePeer.update({ status: 5 });

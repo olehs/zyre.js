@@ -8,7 +8,7 @@
 
 const { assert } = require('chai');
 const { v4: uuidv4 } = require('uuid');
-const zeromq = require('zeromq');
+const ZyreChannel = require('../lib/zyre_channel');
 const ZyrePeers = require('../lib/zyre_peers');
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -18,10 +18,10 @@ describe('ZyrePeers', () => {
 
   // ZreMsg mock
   class Msg {
-    send(socket) {
+    send(channel) {
       msgHit += 1;
-      this.socket = socket;
-      assert.instanceOf(this.socket, zeromq.Socket);
+      this.channel = channel;
+      assert.instanceOf(this.channel, ZyreChannel);
       return new Promise((resolve) => {
         resolve(1);
       });
@@ -128,9 +128,11 @@ describe('ZyrePeers', () => {
 
     zyrePeers.push({ identity: '12345', endpoint: 'tcp://127.0.0.1:56789' });
     await delay(expired + 50);
+    assert.isNotTrue(zyrePeers.exists('12345'));
 
     zyrePeers.push({ identity: '12345' });
     zyrePeers.push({ identity: '12345', address: '127.0.0.1', mailbox: 0 });
+    await delay(50);
     assert.isNotTrue(zyrePeers.exists('12345'));
 
     assert(hit1 && hit2);

@@ -36,16 +36,23 @@ describe('Zyre', () => {
   });
 
   it('should inform about connected peers', async () => {
-    const zyre1 = new Zyre({ name: 'zyre1' });
+    const zyre1 = new Zyre({ name: 'zyre1', headers: { bar: 'foo' } });
     const zyre2 = new Zyre({ name: 'zyre2', headers: { foo: 'bar' } });
 
-    let hit = false;
+    let hit = 0;
 
     zyre1.on('connect', (id, name, headers) => {
       assert.strictEqual(id, zyre2.getIdentity());
-      assert.strictEqual(name, 'zyre2');
+      if (name === 'zyre2') hit += 1;
       assert.deepEqual(headers, { foo: 'bar' });
-      hit = true;
+      hit += 1;
+    });
+
+    zyre2.on('connect', (id, name, headers) => {
+      assert.strictEqual(id, zyre1.getIdentity());
+      if (name === 'zyre1') hit += 1;
+      assert.deepEqual(headers, { bar: 'foo' });
+      hit += 1;
     });
 
     await zyre1.start();
@@ -65,11 +72,11 @@ describe('Zyre', () => {
 
     let hit = false;
 
-    zyre1.on('disconnect', (id, name) => {
+    zyre1.on('disconnect', (id) => {
       assert.strictEqual(id, zyre2.getIdentity());
-      assert.strictEqual(name, 'zyre2');
       hit = true;
     });
+
 
     await zyre1.start();
     await zyre2.start();
@@ -78,9 +85,8 @@ describe('Zyre', () => {
     await zyre2.stop();
     await delay(100);
 
-    await zyre1.stop();
-
     assert(hit);
+    await zyre1.stop();
   });
 
   it('should communicate with WHISPER messages', async () => {
@@ -103,13 +109,11 @@ describe('Zyre', () => {
       zyre2.whisper(zyre1.getIdentity(), 'Hey!');
     });
 
-    const whisper = async () => zyre1.whisper(zyre2.getIdentity(), 'Hello World!');
-
     await zyre1.start();
     await zyre2.start();
     await delay(100);
 
-    await whisper();
+    await zyre1.whisper(zyre2.getIdentity(), 'Hello World!');
     await delay(100);
 
     await Promise.all([
@@ -162,6 +166,75 @@ describe('Zyre', () => {
     ]);
 
     assert(hit1 && hit2);
+  });
+
+  it('should communicate with SHOUT messages in mixed-duplex mode', async () => {
+    const zyre1 = new Zyre({ name: 'zyre1', fullDuplex: true });
+    const zyre2 = new Zyre({ name: 'zyre2', fullDuplex: true });
+    const zyre3 = new Zyre({ name: 'zyre3', fullDuplex: false });
+
+    let hit1 = false;
+    let hit2 = false;
+
+    zyre2.on('shout', (id, name, message, group) => {
+      assert.strictEqual(id, zyre1.getIdentity());
+      assert.strictEqual(name, 'zyre1');
+      assert.strictEqual(message, 'Hello World!');
+      assert.strictEqual(group, 'CHAT');
+      hit1 = true;
+    });
+
+    zyre3.on('shout', (id, name, message, group) => {
+      assert.strictEqual(id, zyre1.getIdentity());
+      assert.strictEqual(name, 'zyre1');
+      assert.strictEqual(message, 'Hello World!');
+      assert.strictEqual(group, 'CHAT');
+      hit2 = true;
+    });
+
+    await zyre1.start();
+    await zyre1.join('CHAT');
+    await zyre2.start();
+    await zyre2.join('CHAT');
+    await zyre3.start();
+    await zyre3.join('CHAT');
+    await delay(100);
+
+    await zyre1.shout('CHAT', 'Hello World!');
+    await delay(100);
+
+    await Promise.all([
+      zyre1.stop(),
+      zyre2.stop(),
+      zyre3.stop(),
+    ]);
+
+    assert(hit1 && hit2);
+  });
+
+  it('should communicate with WHISPER messages in full-duplex mode', async () => {
+    const count = 10;
+
+    const items = Array(count).fill().map((_, i) => i + 1);
+    const zyres = items.map((n) => new Zyre({ name: `zyre${n}`, fullDuplex: true }));
+    let hits = items.reduce((sum, x) => sum + x);
+
+    zyres.forEach((zyre) => zyre.on('whisper', (id, name, content) => {
+      const recipient = parseInt(content, 10);
+      if (recipient < count) {
+        zyre.whisper(zyres[recipient].getIdentity(), `${recipient + 1}`);
+      }
+      hits -= recipient;
+    }));
+
+    await Promise.all(zyres.map((zyre) => zyre.start()));
+    await delay(200);
+
+    await zyres[count - 1].whisper(zyres[0].getIdentity(), '1');
+    await delay(200);
+
+    assert.strictEqual(hits, 0);
+    await Promise.all(zyres.map((zyre) => zyre.stop()));
   });
 
   it('should join a group and send JOIN messages', async () => {
