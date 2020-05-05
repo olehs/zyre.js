@@ -13,9 +13,7 @@ const EventEmitter = require('events');
 const ZHelper = require('../lib/zhelper');
 const ZBeacon = require('../lib/zbeacon');
 
-function delay(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 describe('ZBeacon', () => {
   // ZyrePeers mock

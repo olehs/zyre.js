@@ -10,9 +10,7 @@ const { assert } = require('chai');
 const zeromq = require('zeromq');
 const ZreMsg = require('../lib/zre_msg');
 
-function delay(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 describe('ZreMsg', () => {
   it('should create an instance of ZreMsg', () => {
