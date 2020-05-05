@@ -63,7 +63,7 @@ describe('ZyrePeers', () => {
     assert.isNotTrue(zyrePeers.exists('56789'));
     assert.equal(zyrePeers.getPeer('12345'), zyrePeer);
 
-    zyrePeers.getPeer('12345').disconnect();
+    await zyrePeers.getPeer('12345').disconnect();
     assert.isNotTrue(zyrePeers.exists('12345'));
 
     zyrePeers.push({ identity: '123' });
@@ -132,8 +132,8 @@ describe('ZyrePeers', () => {
     zyrePeers.push({ identity: '12345' });
     zyrePeers.push({ identity: '12345', address: '127.0.0.1', mailbox: 0 });
     assert.isNotTrue(zyrePeers.exists('12345'));
-    await zyrePeers.disconnectAll();
 
     assert(hit1 && hit2);
+    await zyrePeers.disconnectAll();
   });
 });
