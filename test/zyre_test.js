@@ -89,6 +89,43 @@ describe('Zyre', () => {
     await zyre1.stop();
   });
 
+  it('should reconnect on sequence error in full-duplex mode', async () => {
+    const zyre1 = new Zyre({ name: 'foo', fullDuplex: true });
+    const zyre2 = new Zyre({ name: 'bar', binterval: 100, fullDuplex: true });
+
+    await zyre1.start();
+    await zyre1.join('');
+    await zyre2.start();
+    await zyre2.join('');
+    await delay(100);
+
+    let hit = false;
+    const pass = zyre2._zyrePeers.getPeer(zyre1.getIdentity()).passive ? 1 : 2;
+
+    zyre1.on('disconnect', () => { hit = pass === 1; });
+    zyre2.on('disconnect', () => { hit = pass === 2; });
+
+    zyre2._zyrePeers.getPeer(zyre1.getIdentity())._sequenceIn = 0;
+    await zyre1.shout('', 'test1');
+    await delay(300);
+
+    assert(hit, 'disconnect');
+
+    hit = false;
+    zyre1.on('shout', (id, name, content) => {
+      assert.strictEqual(content, 'test2', 'shout content');
+      hit = true;
+    });
+
+    await zyre2.shout('', 'test2');
+    await delay(100);
+
+    assert(hit, 'reconnect');
+
+    await zyre1.stop();
+    await zyre2.stop();
+  });
+
   it('should communicate with WHISPER messages', async () => {
     const zyre1 = new Zyre({ name: 'zyre1' });
     const zyre2 = new Zyre({ name: 'zyre2' });
